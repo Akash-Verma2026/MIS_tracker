@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Tsuyo R&D MIS Tracker</title>
+<link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo-area">
+<img src="assets/tsuyo-logo.jpeg">
+<h2>Tsuyo R&D MIS Tracker</h2> 
+</div>
+
+<div class="topbar">
+<button id="addProjectBtn" onclick="openForm()">Add Project</button>
+<button onclick="generateExcel()">Generate Excel</button>
+<button onclick="logout()">Logout</button>
+</div>
+
+</header>
+
+
+<div class="container">
+
+<!-- DASHBOARD STATS -->
+
+<div class="stats">
+
+<div class="card">
+<h3 id="totalProjects">0</h3>
+<p>Total Projects</p>
+</div>
+
+<div class="card">
+<h3 id="activeProjects">0</h3>
+<p>Active Projects</p>
+</div>
+
+<div class="card">
+<h3 id="completedProjects">0</h3>
+<p>Completed</p>
+</div>
+
+</div>
+
+
+<!-- SEARCH -->
+
+<div class="search-bar">
+<input id="search" placeholder="Search project...">
+</div>
+
+
+<!-- ADD PROJECT FORM -->
+
+<div id="formOverlay">
+
+<div id="projectForm">
+
+<h3>Add Project</h3>
+
+<input id="f_project_code" placeholder="Project Code"><br><br>
+<input id="f_ref_id" placeholder="Ref ID"><br><br>
+<input id="f_project_customer" placeholder="Project / Customer"><br><br>
+<input id="f_type" placeholder="Type"><br><br>
+<input id="f_category" placeholder="Category"><br><br>
+<input id="f_location" placeholder="Location"><br><br>
+<input id="f_business_potential" placeholder="Business Potential"><br><br>
+<input id="f_level" placeholder="Level"><br><br>
+<!-- <label>Progress (%)</label>
+<input type="number" id="progress" min="0" max="100"> -->
+<input id="f_project_brief" placeholder="Project Brief"><br><br>
+
+<select id="f_last_status">
+
+<option value="">Select Status</option>
+<option value="Planning">Planning</option>
+<option value="In Progress">In Progress</option>
+<option value="On Hold">On Hold</option>
+<option value="Completed">Completed</option>
+
+</select>
+
+
+
+
+<input id="f_next_action_plan" placeholder="Next Action Plan"><br><br>
+
+<input id="f_project_leader" placeholder="Project Leader"><br><br>
+<input id="f_sub_leader" placeholder="Sub Leader"><br><br>
+<input id="f_members_roll_no" placeholder="Members Roll No"><br><br>
+
+<!-- <label>Project Folder Link</label>
+<input type="text" id="f_drive_link" placeholder="https://tsuyomanufacturing-my.sharepoint.com/:f:/g/personal/sales_n1_tsuyo_co_in/IgBRTMhP05F5R7-jC89SZhvkAZccJbX-o0v0Q1kbWBRgsOc?e=rEuTUT"><br><br> -->
+
+<div class="form-buttons">
+<button onclick="saveProject()">Save Project</button>
+<button onclick="closeForm()">Cancel</button>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- PROJECT TABLE -->
+
+<div class="table-container">
+
+<table id="projectTable">
+
+<thead>
+
+<tr>
+
+<th>project_code</th>
+<th>ref_id</th>
+<th>project_customer</th>
+<th>type</th>
+<th>category</th>
+<th>location</th>
+<th>business_potential</th>
+<th>level</th>
+<th>project_brief</th>
+<th>last_status</th>
+<th>next_action_plan</th>
+<th>project_leader</th>
+<th>sub_leader</th>
+<th>members_roll_no</th>
+<th>updated_at</th>
+
+<th>Edit</th>
+
+</tr>
+
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Tsuyo R&D MIS Tracker</title>
+<link rel="stylesheet" href="css/style.css">
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="js/config.js"></script>
+<script src="js/dashboard.js"></script> 
+
+</head>
+
+<body>
+
+<header>
+
+<div class="logo-area">
+<img src="assets/tsuyo-logo.jpeg">
+<h2>Tsuyo R&D MIS Tracker</h2>
+</div>
+
+<div class="topbar">
+     <button onclick="openForm()">Add Project</button> 
+     <button id="addProjectBtn" onclick="openForm()">Add Project</button>
+    <button onclick="logout()">Logout</button>
+</div>
+
+</header>
+
+
+<div class="container">
+
+<input id="search" placeholder="Search project...">
+<div id="formOverlay">
+<div id="projectForm">
+
+<h3>Add Project</h3>
+
+<input id="f_project_code" placeholder="Project Code"><br><br>
+<input id="f_ref_id" placeholder="Ref ID"><br><br>
+<input id="f_project_customer" placeholder="Project / Customer"><br><br>
+<input id="f_type" placeholder="Type"><br><br>
+<input id="f_category" placeholder="Category"><br><br>
+<input id="f_location" placeholder="Location"><br><br>
+<input id="f_business_potential" placeholder="Business Potential"><br><br>
+<input id="f_level" placeholder="Level"><br><br>
+<input id="f_project_brief" placeholder="Project Brief"><br><br>
+
+<input id="f_last_status" placeholder="Last Status"><br><br>
+<input id="f_next_action_plan" placeholder="Next Action Plan"><br><br>
+
+<input id="f_project_leader" placeholder="Project Leader"><br><br>
+<input id="f_sub_leader" placeholder="Sub Leader"><br><br>
+<input id="f_members_roll_no" placeholder="Members Roll No"><br><br>
+
+<label>Google Drive Link</label>
+<input type="text" id="f_drive_link" placeholder="Paste Google Drive folder or file link"><br><br>
+
+<button onclick="saveProject()">Save Project</button>
+<button onclick="closeForm()">Cancel</button>
+</div>
+</div>
+
+</div>
+
+
+
+
+
+
+
+
+<table>
+
+<thead>
+<tr>
+
+<th>project_code</th>
+<th>ref_id</th>
+<th>project_customer</th>
+<th>type</th>
+<th>category</th>
+<th>location</th>
+<th>business_potential</th>
+<th>level</th>
+<th>project_brief</th>
+<th>last_status</th>
+<th>next_action_plan</th>
+<th>project_leader</th>
+<th>sub_leader</th>
+<th>members_roll_no</th>
+<th>last_updated </th>
+<th>Drive</th>
+<th>Edit</th>
+
+
+</tr>
+</thead>
+
+<tbody id="tableBody"></tbody>
+
+</table>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</body>
+</html> -->
