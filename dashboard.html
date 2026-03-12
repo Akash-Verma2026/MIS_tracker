@@ -33,28 +33,35 @@
 <div class="stats">
 
 <div class="card">
+<h3 id="customerProjects">0</h3>
+<p>Customer Projects</p>
+</div>
+
+<div class="card">
+<h3 id="rdProjects">0</h3>
+<p>R&D Development</p>
+</div>
+
+<div class="card">
+<h3 id="holdProjects">0</h3>
+<p>On Hold</p>
+</div>
+
+<div class="card">
 <h3 id="totalProjects">0</h3>
 <p>Total Projects</p>
-</div>
-
-<div class="card">
-<h3 id="activeProjects">0</h3>
-<p>Active Projects</p>
-</div>
-
-<div class="card">
-<h3 id="completedProjects">0</h3>
-<p>Completed</p>
 </div>
 
 </div>
 
 
 <!-- SEARCH -->
-
+ 
 <div class="search-bar">
-<input id="search" placeholder="Search project...">
-</div>
+<!-- <input id="search" placeholder="Search project..."> -->
+</div> 
+
+<input type="text" id="searchInput" placeholder="Search by project, customer, leader, status, code..." class="search-input">
 
 
 <!-- ADD PROJECT FORM -->
@@ -62,20 +69,43 @@
 <div id="formOverlay">
 
 <div id="projectForm">
-
 <h3>Add Project</h3>
 
-<input id="f_project_code" placeholder="Project Code"><br><br>
-<input id="f_ref_id" placeholder="Ref ID"><br><br>
-<input id="f_project_customer" placeholder="Project / Customer"><br><br>
-<input id="f_type" placeholder="Type"><br><br>
-<input id="f_category" placeholder="Category"><br><br>
-<input id="f_location" placeholder="Location"><br><br>
-<input id="f_business_potential" placeholder="Business Potential"><br><br>
-<input id="f_level" placeholder="Level"><br><br>
-<!-- <label>Progress (%)</label>
-<input type="number" id="progress" min="0" max="100"> -->
-<input id="f_project_brief" placeholder="Project Brief"><br><br>
+<div class="form-grid">
+
+<input id="f_project_code" placeholder="Project Code">
+<input id="f_ref_id" placeholder="Ref ID">
+<input id="f_project_customer" placeholder="Project / Customer">
+<select id="f_type">
+<option value="">Select Type</option>
+<option value="L1">L3</option>
+<option value="L2">L5</option>
+<option value="L3">N1</option>
+<option value="L4">OFFROAD</option>
+<option value="L4">RND</option>
+
+</select>
+<select id="f_category">
+<option value="">Select Category</option>
+<option value="Customer Projects">Customer Projects</option>
+<option value="R&D Projects">R&D Projects</option>
+<option value="On Hold">On Hold</option>
+</select>
+<input id="f_location" placeholder="Location">
+<select id="f_business_potential">
+<option value="">Select Potential</option>
+<option value="High">High</option>
+<option value="Medium">Medium</option>
+<option value="Low">Low</option>
+</select>
+<select id="f_level">
+<option value="">Select Level</option>
+<option value="Concept">1</option>
+<option value="Development">2</option>
+<option value="Testing">3</option>
+<option value="Production">4</option>
+</select>
+<input id="f_project_brief" placeholder="Project Brief">
 
 <select id="f_last_status">
 
@@ -87,28 +117,63 @@
 
 </select>
 
+<input id="f_next_action_plan" placeholder="Next Action Plan">
 
-
-
-<input id="f_next_action_plan" placeholder="Next Action Plan"><br><br>
-
-<input id="f_project_leader" placeholder="Project Leader"><br><br>
-<input id="f_sub_leader" placeholder="Sub Leader"><br><br>
-<input id="f_members_roll_no" placeholder="Members Roll No"><br><br>
-
-<!-- <label>Project Folder Link</label>
-<input type="text" id="f_drive_link" placeholder="https://tsuyomanufacturing-my.sharepoint.com/:f:/g/personal/sales_n1_tsuyo_co_in/IgBRTMhP05F5R7-jC89SZhvkAZccJbX-o0v0Q1kbWBRgsOc?e=rEuTUT"><br><br> -->
-
+<input id="f_project_leader" placeholder="Project Leader">
+<input id="f_sub_leader" placeholder="Sub Leader">
+<input id="f_members_roll_no" placeholder="Members Roll No">
 <div class="form-buttons">
 <button onclick="saveProject()">Save Project</button>
 <button onclick="closeForm()">Cancel</button>
 </div>
-
 </div>
 
 </div>
 
+</div>
 
+
+<div class="filters">
+<button onclick="filterProjects('Customer')">Customer Projects</button>
+
+<button onclick="filterProjects('R&D')">R&D Projects</button>
+
+<button onclick="filterProjects('On Hold')">On Hold</button>
+
+<button onclick="renderTable()">All</button>
+
+<select id="leaderFilter">
+<option value="all">All Leaders</option>
+<option value="all">Akash</option>
+<option value="all">jiya</option>
+<option value="all">Kavita</option>
+<option value="all">Mayank</option>
+<option value="all">Nikhil</option>
+<option value="all">Pawan</option>
+<option value="all">Prateek</option>
+<option value="all">Puranjan</option>
+<option value="all">Sharmistha</option>
+<option value="all">Suman</option>
+<option value="all">Sweta</option>
+</select>
+
+<select id="potentialFilter">
+<option value="all">All Potential</option>
+<option value="H">High</option>
+<option value="M">Medium</option>
+<option value="L">Low</option>
+</select>
+
+<select id="typeFilter">
+<option value="all">All Types</option>
+<option value="L3">L3</option>
+<option value="L5">L5</option>
+<option value="N1">N1</option>
+<option value="OFFROAD">OFFROAD</option>
+<option value="RND">RND</option>
+</select>
+
+</div>
 <!-- PROJECT TABLE -->
 
 <div class="table-container">
@@ -135,7 +200,7 @@
 <th>members_roll_no</th>
 <th>updated_at</th>
 
-<th>Edit</th>
+<th>Actions</th>
 
 </tr>
 

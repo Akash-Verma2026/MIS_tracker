@@ -264,3 +264,105 @@ overflow:hidden;
 height:100%;
 background:#0ea5e9;
 }
+
+.search-input{
+width:350px;
+padding:10px 12px;
+border-radius:6px;
+border:1px solid #d0d7de;
+font-size:14px;
+outline:none;
+}
+
+.filters{
+display:flex;
+align-items:center;
+gap:10px;
+margin:15px 0;
+flex-wrap:wrap;
+}
+
+.search-box{
+width:350px;
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+
+.filter-btn{
+padding:8px 14px;
+border:none;
+border-radius:6px;
+background:#e9ecef;
+cursor:pointer;
+}
+
+.filter-btn.active{
+background:#1e88e5;
+color:white;
+}
+
+select{
+padding:8px 10px;
+border-radius:6px;
+border:1px solid #ccc;
+}
+#projectForm {
+width: 500px;
+max-height: 80vh;
+overflow-y: auto;
+background: white;
+padding: 25px;
+border-radius: 10px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:12px;
+}
+
+#projectForm input,
+#projectForm select,
+#projectForm textarea{
+width:100%;
+padding:10px;
+border:1px solid #ccc;
+border-radius:6px;
+font-size:14px;
+margin-bottom:12px;
+box-sizing:border-box;
+}
+
+#projectForm textarea{
+grid-column:span 2;
+height:70px;
+}
+.form-buttons{
+display:flex;
+justify-content:center;
+gap:15px;
+margin-top:15px;
+}
+
+.form-buttons button{
+padding:10px 20px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+font-weight:600;
+}
+
+.form-buttons button:first-child{
+background:#1e88e5;
+color:white;
+}
+
+.form-buttons button:last-child{
+background:#ccc;
+}
+td button{
+margin-right:6px;
+margin-bottom:4px;
+}
