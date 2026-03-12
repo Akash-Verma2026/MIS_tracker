@@ -140,6 +140,7 @@ http://127.0.0.1:5500
 ## Author
 
 Developer: Abira Mandal
+
 This project was developed for the Tsuyo R&D Department to manage and monitor internal project tracking through a role-based MIS dashboard.
 
 Project maintained using GitHub.
