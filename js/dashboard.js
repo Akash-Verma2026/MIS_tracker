@@ -77,29 +77,7 @@ if(!data) return
 allProjects = data
 renderTable()
 
-// data.forEach(p => {
 
-// let statusClass = ""
-
-// if(p.last_status === "Planning") statusClass = "status-planning"
-// if(p.last_status === "In Progress") statusClass = "status-progress"
-// if(p.last_status === "On Hold") statusClass = "status-hold"
-// if(p.last_status === "Completed") statusClass = "status-completed"
-
-// let statusBadge = `<span class="status ${statusClass}">${p.last_status}</span>`
-  
-//    let progress = 0
-
-// if(p.level === "L1") progress = 25
-// if(p.level === "L2") progress = 50
-// if(p.level === "L3") progress = 75
-// if(p.level === "L4") progress = 100
-
-// let progressBar = `
-// <div class="progress">
-// <div class="progress-bar" style="width:${progress}%"></div>
-// </div>
-// `
 
 // let row = document.createElement("tr")
 // // row.setAttribute("data-category", project.category)
@@ -180,67 +158,9 @@ tbody.appendChild(row)
 })
 
 }
-// function filterProjects(type){
-
-// let filtered = allProjects
-
-// if(type === "Customer"){
-// filtered = allProjects.filter(p =>
-// (p.category || "").toLowerCase().includes("customer")
-// )
-// }
-
-// else if(type === "R&D"){
-// filtered = allProjects.filter(p =>
-// (p.category || "").toLowerCase().includes("r&d")
-// )
-// }
-
-// else if(type === "On Hold"){
-// filtered = allProjects.filter(p =>
-// (p.category || "").trim().toLowerCase().includes("hold")
-// )
-// }
-
-// else if(type === "All"){
-// filtered = allProjects
-// }
-
-// renderTable(filtered)
-
-// }
-
-
-// function populateLeaders(){
-
-// let leaders = new Set()
-// document.querySelectorAll("#projectTable tbody tr").forEach(row=>{
-// let leader = row.children[11].innerText.trim()
-// if(leader) leaders.add(leader)
-// })
-
-// let dropdown = document.getElementById("leaderFilter")
-
-// leaders.forEach(l=>{
-
-// let option = document.createElement("option")
-// option.value=l
-// option.text=l
-
-// dropdown.appendChild(option)
-
-// })
-
-// }
 
 populateLeaders()
 
-
-// const progressBar = `
-// <div style="width:120px;background:#e5e7eb;border-radius:10px;height:8px;">
-//   <div style="width:${progress}%;background:#0ea5e9;height:8px;border-radius:10px;"></div>
-// </div>
-// `;
 // UPDATE STATUS
 async function updateStatus(id,value){
 
@@ -326,10 +246,6 @@ window.editingId = id
 
 async function addProject(){
 
-// if(role !== "admin"){
-// alert("Only admin can add projects")
-// return
-// }
 if(role === "admin"){
 document.getElementById("addProjectBtn").style.display = "inline-block"
 }else{
@@ -412,8 +328,6 @@ const next_action_plan = document.getElementById("f_next_action_plan").value
 const project_leader = document.getElementById("f_project_leader").value
 const sub_leader = document.getElementById("f_sub_leader").value
 const members_roll_no = document.getElementById("f_members_roll_no").value
-// const drive_link = document.getElementById("f_drive_link").value
-//progress: document.getElementById("progress").value
 let query
 
 if(window.editingId){
@@ -435,7 +349,6 @@ next_action_plan,
 project_leader,
 sub_leader,
 members_roll_no,
-// drive_link
 })
 .eq("id", window.editingId)
 
@@ -458,7 +371,6 @@ next_action_plan,
 project_leader,
 sub_leader,
 members_roll_no,
-// drive_link,
 updated_at: new Date()
 }])
 
@@ -472,24 +384,6 @@ closeForm()
 
 }
 
-// document.getElementById("leaderFilter").addEventListener("change",function(){
-
-// let leader=this.value
-
-// document.querySelectorAll("#tableBody tr").forEach(row=>{
-
-// let rowLeader=row.children[9].innerText
-
-// if(leader==="all" || rowLeader===leader){
-// row.style.display=""
-// }else{
-// row.style.display="none"
-// }
-
-// })
-
-// })
-
 function updateDashboardCounts() {
 
 let rows = document.querySelectorAll("#tableBody tr")
@@ -501,7 +395,7 @@ let total = rows.length
 
 rows.forEach(row => {
 
-let category = row.children[4].innerText.toLowerCase()  // category column
+let category = row.children[4].innerText.toLowerCase()  
 
 if(category.includes("customer")) customer++
 if(category.includes("r&d")) rd++
@@ -526,7 +420,6 @@ let leaders = new Set()
 document.querySelectorAll("#projectTable tbody tr").forEach(row => {
 
  let leader = row.children[11]?.innerText.trim()
-// let leader = row.querySelector(".leader")?.innerText.trim()
 
 if(leader && leader !== "-"){
 leaders.add(leader)
@@ -546,48 +439,6 @@ dropdown.appendChild(option)
 
 }
 
-// SEARCH PROJECT
-// document.getElementById("search").addEventListener("input", function(){
-
-// const value = this.value.toLowerCase()
-
-// const rows = document.querySelectorAll("#tableBody tr")
-
-// rows.forEach(row => {
-
-// const text = row.innerText.toLowerCase()
-
-// if(text.includes(value)){
-// row.style.display = ""
-// }else{
-// row.style.display = "none"
-// }
-
-// })
-
-// })
-
-// function filterCategory(category){
-
-// let rows = document.querySelectorAll("#tableBody tr")
-
-// rows.forEach(row=>{
-
-// let cat = row.children[4].innerText
-
-// if(category === "all"){
-// row.style.display=""
-// }
-// else if(cat.includes(category)){
-// row.style.display=""
-// }
-// else{
-// row.style.display="none"
-// }
-
-// })
-
-// }
 
 function filterCategory(type){
 
