@@ -1,5 +1,6 @@
-let activeFilters = {
-type: "all",
+let filters = {
+category: "all",
+type:"all",
 leader: "all",
 potential: "all",
 search: ""
@@ -47,76 +48,55 @@ const { data, error } = await supabaseClient
 .from("mis_tracker")
 .select("*")
 .order("id", { ascending: true })
+
+const leaderSet = new Set()
+
+data.forEach(p => {
+  if (p.project_leader) {
+    leaderSet.add(p.project_leader)
+  }
+})
+
+const leaderFilter = document.getElementById("leaderFilter")
+
+// clear old options except first
+leaderFilter.innerHTML = '<option value="all">All Leaders</option>'
+
+// add new options dynamically
+leaderSet.forEach(leader => {
+  const option = document.createElement("option")
+  option.value = leader
+  option.textContent = leader
+  leaderFilter.appendChild(option)
+})
+const typeSet = new Set()
+
+data.forEach(p => {
+  if (p.type) {
+    typeSet.add(p.type)
+  }
+})
+
+const typeFilter = document.getElementById("typeFilter")
+
+typeFilter.innerHTML = '<option value="all">All Types</option>'
+
+typeSet.forEach(type => {
+  const option = document.createElement("option")
+  option.value = type
+  option.textContent = type
+  typeFilter.appendChild(option)
+})
 if(error){
 console.error(error)
 alert(error.message)
 return
 }
 
-
-// dashboard cards
-
-document.getElementById("totalProjects").innerText = data.length
-
-const customer = data.filter(p => p.category === "Customer").length
-const rd = data.filter(p => (p.category || "").includes("R&D Development")).length
-const hold = data.filter(p => (p.category || "").includes("Hold")).length
-
-document.getElementById("customerProjects").innerText = customer
-document.getElementById("rdProjects").innerText = rd
-document.getElementById("holdProjects").innerText = hold
-
-
-
-const tbody = document.getElementById("tableBody")
-
-tbody.innerHTML = ""
-
-if(!data) return
-
 allProjects = data
-renderTable()
 
-
-
-// let row = document.createElement("tr")
-// // row.setAttribute("data-category", project.category)
-// row.innerHTML = `
-
-// <td>${p.project_code || "-"}</td>
-// <td>${p.ref_id || "-"}</td>
-// <td>${p.project_customer || "-"}</td>
-// <td>${p.type || "-"}</td>
-// <td>${p.category || "-"}</td>
-// <td>${p.location || "-"}</td>
-// <td>${p.business_potential || "-"}</td>
-// <td>${p.level || "-"}</td>
-// <td>${p.project_brief || "-"}</td>
-// <td>${p.last_status || "-"}</td>
-
-// <td>${p.next_action_plan || "-"}</td>
-// <td>${p.project_leader || "-"}</td>
-// <td>${p.sub_leader || "-"}</td>
-// <td>${p.members_roll_no || "-"}</td>
-// <td>${formatDate(p.updated_at || p.created_at)}</td>
-
-
-// <td>
-// ${role !== "viewer" ? `<button onclick="editProject(${p.id})">Edit</button>` : ""}
-// </td>
-
-// <td>
-// ${role === "admin" ? `<button onclick="deleteProject(${p.id})">Delete</button>` : ""}
-// </td>
-
-// `
-
-// tbody.appendChild(row)
-
-// })
- renderTable()
- populateLeaders()
- updateDashboardCounts()
+ renderTable(allProjects)
+ updateDashboardCounts(allProjects)
 
 
  }
@@ -158,8 +138,6 @@ tbody.appendChild(row)
 })
 
 }
-
-populateLeaders()
 
 // UPDATE STATUS
 async function updateStatus(id,value){
@@ -246,11 +224,11 @@ window.editingId = id
 
 async function addProject(){
 
-if(role === "admin"){
-document.getElementById("addProjectBtn").style.display = "inline-block"
-}else{
-document.getElementById("addProjectBtn").style.display = "none"
-}
+// if(role === "admin"){
+// document.getElementById("addProjectBtn").style.display = "inline-block"
+// }else{
+// document.getElementById("addProjectBtn").style.display = "none"
+// }
 
 const project_code = prompt("Project Code")
 const ref_id = prompt("Ref ID")
@@ -317,7 +295,12 @@ return
 const project_code = document.getElementById("f_project_code").value
 const ref_id = document.getElementById("f_ref_id").value
 const project_customer = document.getElementById("f_project_customer").value
-const type = document.getElementById("f_type").value
+let type = document.getElementById("f_type").value
+const customType = document.getElementById("f_type_custom").value
+
+if(type === "Others" && customType){
+  type = customType
+}
 const category = document.getElementById("f_category").value
 const location = document.getElementById("f_location").value
 const business_potential = document.getElementById("f_business_potential").value
@@ -335,20 +318,21 @@ if(window.editingId){
 query = supabaseClient
 .from("mis_tracker")
 .update({
-project_code,
-ref_id,
-project_customer,
-type,
-category,
-location,
-business_potential,
-level,
-project_brief,
-last_status,
-next_action_plan,
-project_leader,
-sub_leader,
-members_roll_no,
+ project_code,
+ ref_id,
+ project_customer,
+ type,
+ category,
+ location,
+ business_potential,
+ level,
+ project_brief,
+ last_status,
+ next_action_plan,
+ project_leader,
+ sub_leader,
+ members_roll_no,
+ updated_at: new Date()   // ✅ ADD THIS
 })
 .eq("id", window.editingId)
 
@@ -374,6 +358,10 @@ members_roll_no,
 updated_at: new Date()
 }])
 
+if(type === "Others" && !customType){
+  alert("Please enter custom type")
+  return
+}
 }
 
 await query
@@ -381,21 +369,20 @@ await query
 window.editingId = null
 loadProjects()
 closeForm()
+document.querySelectorAll("#projectForm input, #projectForm select")
+.forEach(el => el.value = "")
 
 }
 
-function updateDashboardCounts() {
-
-let rows = document.querySelectorAll("#tableBody tr")
+function updateDashboardCounts(data) {
 
 let customer = 0
 let rd = 0
 let hold = 0
-let total = rows.length
 
-rows.forEach(row => {
+data.forEach(p => {
 
-let category = row.children[4].innerText.toLowerCase()  
+let category = (p.category || "").toLowerCase()
 
 if(category.includes("customer")) customer++
 if(category.includes("r&d")) rd++
@@ -406,86 +393,61 @@ if(category.includes("hold")) hold++
 document.getElementById("customerProjects").innerText = customer
 document.getElementById("rdProjects").innerText = rd
 document.getElementById("holdProjects").innerText = hold
-document.getElementById("totalProjects").innerText = total
+document.getElementById("totalProjects").innerText = data.length
 
 }
 
-function populateLeaders(){
+// function populateLeaders(){
 
-let dropdown = document.getElementById("leaderFilter")
-dropdown.innerHTML = '<option value="all">All Leaders</option>'
+// let dropdown = document.getElementById("leaderFilter")
+// dropdown.innerHTML = '<option value="all">All Leaders</option>'
 
-let leaders = new Set()
+// let leaders = new Set()
 
-document.querySelectorAll("#projectTable tbody tr").forEach(row => {
+// document.querySelectorAll("#projectTable tbody tr").forEach(row => {
 
- let leader = row.children[11]?.innerText.trim()
+//  let leader = row.children[11]?.innerText.trim()
 
-if(leader && leader !== "-"){
-leaders.add(leader)
+// if(leader && leader !== "-"){
+// leaders.add(leader)
+// }
+
+// })
+
+// leaders.forEach(name => {
+
+// let option = document.createElement("option")
+// option.value = name
+// option.textContent = name
+
+// dropdown.appendChild(option)
+
+// })
+
+// }
+function filterProjects(category) {
+
+  if(category === "all"){
+    filters = {
+      category: "all",
+      type: "all",
+      leader: "all",
+      potential: "all",
+      search: ""
+    }
+
+    document.getElementById("leaderFilter").value = "all"
+    document.getElementById("potentialFilter").value = "all"
+    document.getElementById("typeFilter").value = "all"
+    document.getElementById("searchInput").value = ""
+  } else {
+    filters.category = category
+  }
+
+  applyFilters()
 }
 
-})
 
-leaders.forEach(name => {
-
-let option = document.createElement("option")
-option.value = name
-option.textContent = name
-
-dropdown.appendChild(option)
-
-})
-
-}
-
-
-function filterCategory(type){
-
-let rows = document.querySelectorAll("#tableBody tr")
-
-rows.forEach(row => {
-
-let status = row.children[4].innerText.toLowerCase()
-let category = row.getAttribute("data-category")
-
-if(type === "all"){
-row.style.display = ""
-}
-
-else if(type === "Customer" && category === "Customer"){
-row.style.display = ""
-}
-
-else if(type === "R&D" && category === "R&D"){
-row.style.display = ""
-}
-
-else if(type === "On Hold" && status.includes("hold")){
-row.style.display = ""
-}
-
-else{
-row.style.display = "none"
-}
-
-})
-
-}
-
-const searchInput = document.getElementById("searchInput")
-
-searchInput.addEventListener("keyup", function(){
-
-const filter = searchInput.value.toLowerCase()
-const rows = document.querySelectorAll("#tableBody tr")
-
-rows.forEach(row => {
-row.style.display =
-row.innerText.toLowerCase().includes(filter) ? "" : "none"
-})
-
-})
 function formatDate(dateString){
 
 const date = new Date(dateString)
@@ -510,45 +472,11 @@ let workbook = XLSX.utils.table_to_book(table, { sheet: "Projects" })
 XLSX.writeFile(workbook, "MIS_Project_Data.xlsx")
 
 }
-function filterProjects(type){
-
-let filtered = allProjects
-
-if(type === "Customer"){
-filtered = allProjects.filter(p =>
-(p.category || "").toLowerCase().includes("customer")
-)
-}
-
-if(type === "R&D"){
-filtered = allProjects.filter(p =>
-(p.category || "").toLowerCase().includes("r&d")
-)
-}
-
-if(type === "On Hold"){
-filtered = allProjects.filter(p =>
-(p.category || "").toLowerCase().includes("hold")
-)
-}
-
-renderTable(filtered)
-
-}
 // LEADER FILTER
 document.getElementById("leaderFilter").addEventListener("change", function(){
 
-let leader = this.value
-
-let filtered = allProjects.filter(p => {
-
-if(leader === "all") return true
-
-return (p.project_leader || "").toLowerCase() === leader.toLowerCase()
-
-})
-
-renderTable(filtered)
+filters.leader = this.value
+applyFilters()
 
 })
 
@@ -556,37 +484,95 @@ renderTable(filtered)
 // POTENTIAL FILTER
 document.getElementById("potentialFilter").addEventListener("change", function(){
 
-let potential = this.value
-
-let filtered = allProjects.filter(p => {
-
-if(potential === "all") return true
-
-return (p.business_potential || "").toLowerCase() === potential.toLowerCase()
+filters.potential = this.value
+applyFilters()
 
 })
 
-renderTable(filtered)
-
+document.getElementById("searchInput").addEventListener("input", function () {
+  filters.search = this.value.toLowerCase()
+  applyFilters()
 })
-
-
 // TYPE FILTER
 document.getElementById("typeFilter").addEventListener("change", function(){
-
-let type = this.value
-
-let filtered = allProjects.filter(p => {
-
-if(type === "all") return true
-
-return (p.type || "").toLowerCase() === type.toLowerCase()
-
+  filters.type = this.value
+  applyFilters()
 })
 
-renderTable(filtered)
 
-})
+
+function applyFilters() {
+
+  let filteredData = [...allProjects]
+
+  // 🔍 SEARCH
+  if (filters.search) {
+    filteredData = filteredData.filter(p =>
+      (p.project_code || "").toLowerCase().includes(filters.search) ||
+      (p.project_customer || "").toLowerCase().includes(filters.search) ||
+      (p.project_leader || "").toLowerCase().includes(filters.search) ||
+      (p.last_status || "").toLowerCase().includes(filters.search) ||
+      (p.ref_id || "").toLowerCase().includes(filters.search)
+    )
+  }
+
+  // 👤 LEADER
+  if (filters.leader !== "all") {
+    filteredData = filteredData.filter(p =>
+      (p.project_leader || "").toLowerCase() === filters.leader.toLowerCase()
+    )
+  }
+
+  // 💰 POTENTIAL
+  if (filters.potential !== "all") {
+    filteredData = filteredData.filter(p =>
+      (p.business_potential || "").toLowerCase() === filters.potential.toLowerCase()
+    )
+  }
+
+  // 🧩 CATEGORY
+  if (filters.category !== "all") {
+    if (filters.category === "Customer") {
+      filteredData = filteredData.filter(p =>
+        (p.category || "").toLowerCase().includes("customer")
+      )
+    }
+
+    if (filters.category === "R&D") {
+      filteredData = filteredData.filter(p =>
+        (p.category || "").toLowerCase().includes("r&d")
+      )
+    }
+
+    if (filters.category === "On Hold") {
+      filteredData = filteredData.filter(p =>
+        (p.category || "").toLowerCase().includes("hold")
+      )
+    }
+  }
+
+  // ✅ TYPE FILTER (INSIDE FUNCTION)
+  if (filters.type !== "all") {
+    filteredData = filteredData.filter(p =>
+      (p.type || "").toLowerCase() === filters.type.toLowerCase()
+    )
+  }
+
+  // 🔥 FINAL
+  renderTable(filteredData)
+  updateDashboardCounts(allProjects)
+}
+function handleTypeChange() {
+  const typeSelect = document.getElementById("f_type")
+  const customInput = document.getElementById("f_type_custom")
+
+  if (typeSelect.value === "Others") {
+    customInput.style.display = "block"
+  } else {
+    customInput.style.display = "none"
+    customInput.value = ""
+  }
+}
 
 // START APP
 getUserRole()

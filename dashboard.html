@@ -76,20 +76,26 @@
 <input id="f_project_code" placeholder="Project Code">
 <input id="f_ref_id" placeholder="Ref ID">
 <input id="f_project_customer" placeholder="Project / Customer">
-<select id="f_type">
+<select id="f_type" onchange="handleTypeChange()">
 <option value="">Select Type</option>
-<option value="L1">L3</option>
-<option value="L2">L5</option>
-<option value="L3">N1</option>
-<option value="L4">OFFROAD</option>
-<option value="L4">RND</option>
-
+<option value="L3">L3</option>
+<option value="L5">L5</option>
+<option value="N1">N1</option>
+<option value="OFFROAD">OFFROAD</option>
+<option value="RND">RND</option>
+<option value="Others">Others</option>
 </select>
+<input id="f_type_custom" placeholder="Enter new type" style="display:none;">
+
 <select id="f_category">
 <option value="">Select Category</option>
 <option value="Customer Projects">Customer Projects</option>
 <option value="R&D Projects">R&D Projects</option>
 <option value="On Hold">On Hold</option>
+<!-- <option value="all">All</option>
+<option value="Customer">Customer</option>
+<option value="R&D">R&D</option>
+<option value="On Hold">On Hold</option> -->
 </select>
 <input id="f_location" placeholder="Location">
 <select id="f_business_potential">
@@ -135,16 +141,14 @@
 
 <div class="filters">
 <button onclick="filterProjects('Customer')">Customer Projects</button>
-
 <button onclick="filterProjects('R&D')">R&D Projects</button>
-
 <button onclick="filterProjects('On Hold')">On Hold</button>
 
-<button onclick="renderTable()">All</button>
+<button onclick="filterProjects('all')">All</button>
 
 <select id="leaderFilter">
 <option value="all">All Leaders</option>
-<option value="all">Akash</option>
+<!-- <option value="all">Akash</option>
 <option value="all">jiya</option>
 <option value="all">Kavita</option>
 <option value="all">Mayank</option>
@@ -154,14 +158,14 @@
 <option value="all">Puranjan</option>
 <option value="all">Sharmistha</option>
 <option value="all">Suman</option>
-<option value="all">Sweta</option>
+<option value="all">Sweta</option> -->
 </select>
 
 <select id="potentialFilter">
 <option value="all">All Potential</option>
-<option value="H">High</option>
-<option value="M">Medium</option>
-<option value="L">Low</option>
+<option value="High">High</option>
+<option value="Medium">Medium</option>
+<option value="Low">Low</option>
 </select>
 
 <select id="typeFilter">
