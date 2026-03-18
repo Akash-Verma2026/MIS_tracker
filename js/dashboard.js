@@ -46,7 +46,7 @@ async function loadProjects(){
 const { data, error } = await supabaseClient
 .from("mis_tracker")
 .select("*")
-.order("updated_at",{ascending:false})
+.order("id", { ascending: true })
 if(error){
 console.error(error)
 alert(error.message)
