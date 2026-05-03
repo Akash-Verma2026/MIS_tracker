@@ -21,6 +21,7 @@
 <button id="addProjectBtn" onclick="openForm()">Add Project</button>
 <button onclick="generateExcel()">Generate Excel</button>
 <button onclick="logout()">Logout</button>
+<!-- <button onclick="openAIReportPage()">AI Report</button> -->
 </div>
 
 </header>
@@ -43,8 +44,18 @@
 </div>
 
 <div class="card">
+<h3 id="otherProjects">0</h3>
+<p>Other Projects</p>
+</div>
+
+<div class="card">
 <h3 id="holdProjects">0</h3>
 <p>On Hold</p>
+</div>
+
+<div class="card">
+<h3 id="completedProjects">0</h3>
+<p>Completed Projects</p>
 </div>
 
 <div class="card">
@@ -91,7 +102,9 @@
 <option value="">Select Category</option>
 <option value="Customer Projects">Customer Projects</option>
 <option value="R&D Projects">R&D Projects</option>
+<option value="Others">Others</option>
 <option value="On Hold">On Hold</option>
+<!-- <option value="Completed">Completed</option> -->
 <!-- <option value="all">All</option>
 <option value="Customer">Customer</option>
 <option value="R&D">R&D</option>
@@ -131,6 +144,7 @@
 <div class="form-buttons">
 <button onclick="saveProject()">Save Project</button>
 <button onclick="closeForm()">Cancel</button>
+
 </div>
 </div>
 
@@ -142,8 +156,9 @@
 <div class="filters">
 <button onclick="filterProjects('Customer')">Customer Projects</button>
 <button onclick="filterProjects('R&D')">R&D Projects</button>
+<button onclick="filterProjects('Others')">Others</button>
 <button onclick="filterProjects('On Hold')">On Hold</button>
-
+<button onclick="filterProjects('Completed')">Completed</button>
 <button onclick="filterProjects('all')">All</button>
 
 <select id="leaderFilter">
@@ -178,6 +193,14 @@
 </select>
 
 </div>
+<!-- AI REPORT BOX -->
+<!-- <div id="aiReportBox" style="
+  background:#ffffff;
+  padding:20px;
+  margin:20px 0;
+  border-radius:10px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
+"></div> -->
 <!-- PROJECT TABLE -->
 
 <div class="table-container">
@@ -222,6 +245,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="js/dashboard.js"></script>
 
 </body>

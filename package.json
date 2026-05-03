@@ -1,0 +1,28 @@
+{
+  "name": "tsuyo_tracker",
+  "version": "1.0.0",
+  "description": "The **Tsuyo R&D MIS Tracker** is a web-based dashboard designed to manage and monitor project information for the R&D team.\r It allows users to view, update, and manage project details through an interactive interface while maintaining role-based access control.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Akash-Verma2026/MIS_tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Akash-Verma2026/MIS_tracker/issues"
+  },
+  "homepage": "https://github.com/Akash-Verma2026/MIS_tracker#readme",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jspdf": "^4.2.1",
+    "openai": "^6.32.0"
+  }
+}

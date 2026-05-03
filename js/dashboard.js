@@ -1,3 +1,4 @@
+//import { jsPDF } from "jspdf";
 let filters = {
 category: "all",
 type:"all",
@@ -97,7 +98,7 @@ allProjects = data
 
  renderTable(allProjects)
  updateDashboardCounts(allProjects)
-
+ //generateAIReport()
 
  }
  function renderTable(projects = allProjects){
@@ -128,6 +129,7 @@ row.innerHTML = `
 <td>${formatDate(p.updated_at || p.created_at)}</td>
 
 <td>
+<button onclick="generateReport(${p.id})">Report</button>
 ${role !== "viewer" ? `<button onclick="editProject(${p.id})">Edit</button>` : ""}
 ${role === "admin" ? `<button onclick="deleteProject(${p.id})">Delete</button>` : ""}
 </td>
@@ -378,21 +380,34 @@ function updateDashboardCounts(data) {
 
 let customer = 0
 let rd = 0
+let others = 0 
 let hold = 0
+let completed = 0
 
 data.forEach(p => {
 
 let category = (p.category || "").toLowerCase()
+let status = (p.last_status || "").toLowerCase()
+
+// ✅ COMPLETED BASED ON STATUS
+if (status.includes("complete")) {
+  completed++
+  return // skip counting in other categories
+}
 
 if(category.includes("customer")) customer++
-if(category.includes("r&d")) rd++
-if(category.includes("hold")) hold++
+else if(category.includes("r&d")) rd++
+else if(category.includes("hold")) hold++
+else others++
+
 
 })
 
 document.getElementById("customerProjects").innerText = customer
 document.getElementById("rdProjects").innerText = rd
+document.getElementById("otherProjects").innerText = others
 document.getElementById("holdProjects").innerText = hold
+document.getElementById("completedProjects").innerText = completed
 document.getElementById("totalProjects").innerText = data.length
 
 }
@@ -532,21 +547,56 @@ function applyFilters() {
 
   // 🧩 CATEGORY
   if (filters.category !== "all") {
+    // if (filters.category === "Customer") {
+    //   filteredData = filteredData.filter(p =>
+    //     (p.category || "").toLowerCase().includes("customer")
+    //   )
+    // }
     if (filters.category === "Customer") {
-      filteredData = filteredData.filter(p =>
-        (p.category || "").toLowerCase().includes("customer")
-      )
-    }
+  filteredData = filteredData.filter(p =>
+    !(p.last_status || "").toLowerCase().includes("complete") &&
+    (p.category || "").toLowerCase().includes("customer")
+  )
+}
 
+    // if (filters.category === "R&D") {
+    //   filteredData = filteredData.filter(p =>
+    //     (p.category || "").toLowerCase().includes("r&d")
+    //   )
+    // }
     if (filters.category === "R&D") {
-      filteredData = filteredData.filter(p =>
-        (p.category || "").toLowerCase().includes("r&d")
-      )
-    }
+  filteredData = filteredData.filter(p =>
+    !(p.last_status || "").toLowerCase().includes("complete") &&
+    (p.category || "").toLowerCase().includes("r&d")
+  )
+}
 
+    // if (filters.category === "On Hold") {
+    //   filteredData = filteredData.filter(p =>
+    //     (p.category || "").toLowerCase().includes("hold")
+    //   )
+    // }
+    if (filters.category === "Others") {
+  filteredData = filteredData.filter(p => {
+
+    let status = (p.last_status || "").toLowerCase()
+    let category = (p.category || "").toLowerCase().trim()
+
+    return !status.includes("complete") &&
+           !category.includes("customer") &&
+           !category.includes("r&d") &&
+           !category.includes("hold")
+  })
+}
     if (filters.category === "On Hold") {
-      filteredData = filteredData.filter(p =>
-        (p.category || "").toLowerCase().includes("hold")
+  filteredData = filteredData.filter(p =>
+    !(p.last_status || "").toLowerCase().includes("complete") &&
+    (p.category || "").toLowerCase().includes("hold")
+  )
+}
+   if (filters.category === "Completed") {
+  filteredData = filteredData.filter(p =>
+      (p.last_status || "").toLowerCase().includes("complete")
       )
     }
   }
@@ -572,6 +622,533 @@ function handleTypeChange() {
     customInput.style.display = "none"
     customInput.value = ""
   }
+}
+// ===============================
+// 🧠 DECISION ENGINE (STEP 2)
+// ===============================
+function getNextAction(p, score) {
+  let status = (p.last_status || "").toLowerCase()
+
+  if (score < 40) {
+    return "🚨 Escalate immediately and assign senior owner."
+  }
+
+  if (status.includes("waiting")) {
+    return "⏳ Follow up within 24 hours."
+  }
+
+  if (status.includes("delay")) {
+    return "⚠️ Identify delay cause and re-plan timeline."
+  }
+
+  if (!p.next_action_plan) {
+    return "❗ Define clear next action."
+  }
+
+  if ((p.business_potential || "").toLowerCase() === "high") {
+    return "🚀 Prioritize and push for closure."
+  }
+
+  return "✅ Continue normal execution."
+}
+
+// ===============================
+// 📄 SUMMARY GENERATOR (STEP 5)
+// ===============================
+function generateSummary(data) {
+  if (data.score > 80) {
+    return "Project is performing well with minimal risks."
+  }
+  if (data.score > 50) {
+    return "Project has moderate risks and needs monitoring."
+  }
+  return "Project is at high risk and requires immediate action."
+}
+
+// ===============================
+// ⚙️ RULE ENGINE (STEP 1)
+// ===============================
+function processProjects(projects) {
+  return projects.map(p => {
+
+    let score = 100
+
+    let status = (p.last_status || "").toLowerCase()
+    let bp = (p.business_potential || "").toLowerCase()
+    let action = (p.next_action_plan || "").toLowerCase()
+
+    let category = (p.category || "").toLowerCase()
+
+    // 🔻 scoring
+    if (status.includes("delay")) score -= 30
+    else if (status.includes("waiting")) score -= 20
+
+    if (bp === "low") score -= 25
+    else if (bp === "medium") score -= 10
+
+    if (!action) score -= 25
+    
+if (category.includes("hold")) {
+  score = Math.min(score, 50)
+}
+
+    if (score < 0) score = 0
+
+    // 🔻 health + risk
+    let health = "Excellent"
+    let risk = "Low"
+
+    if (score < 40) {
+      health = "Critical"
+      risk = "Very High"
+    } else if (score < 60) {
+      health = "Weak"
+      risk = "High"
+    } else if (score < 80) {
+      health = "Moderate"
+      risk = "Medium"
+    }
+
+    // 🔻 decision engine
+    let nextAction = getNextAction(p, score)
+
+    return {
+      ...p,
+      score,
+      health,
+      risk,
+      nextAction
+    }
+  })
+}
+
+// ===============================
+// 📊 BUILD REPORT (MAIN FUNCTION)
+// ===============================
+function buildHealthReport(projects) {
+
+  // ✅ Process all projects
+  const processed = processProjects(projects)
+
+  // 👉 pick first project (you can improve later)
+  const p = processed[0]
+
+  let status = (p.last_status || "").toLowerCase()
+
+  // 🔍 ISSUES
+  let issues = []
+
+  if (status.includes("waiting")) {
+    issues.push("Waiting for customer response")
+  }
+  if (status.includes("quotation")) {
+    issues.push("Quotation pending")
+  }
+  if (status.includes("dispatch")) {
+    issues.push("Dispatch not completed")
+  }
+
+  // 💡 INSIGHTS
+  let insights = []
+
+  if (status.includes("waiting")) {
+    insights.push("Project is dependent on external response")
+  }
+  if (!p.business_potential) {
+    insights.push("No clear revenue visibility")
+  }
+
+  insights.push("Resource utilization needs monitoring")
+
+  // 🚀 RECOMMENDATIONS
+  let recommendations = {
+    immediate: [
+      "Follow up with customer within 24–48 hrs",
+      "Close pending quotation tasks",
+      "Assign single point of ownership"
+    ],
+    shortTerm: [
+      "Set strict response deadlines",
+      "Re-evaluate feasibility"
+    ],
+    strategic: [
+      "If no response in 7 days → Move to Hold/Drop decision"
+    ]
+  }
+
+  // 🧠 FINAL DECISION
+  let finalDecision = "Continue project"
+
+  if (p.score < 50) {
+    finalDecision = "Consider stopping or restructuring project"
+  } else if (p.score < 80) {
+    finalDecision = "Continue with caution"
+  }
+
+  // 📄 SUMMARY
+  let summary = generateSummary(p)
+
+  // ✅ FINAL DATA
+  const finalData = {
+    score: p.score,
+    health: p.health,
+    risk: p.risk,
+    nextAction: p.nextAction,
+    issues,
+    insights,
+    recommendations,
+    finalDecision,
+    summary
+  }
+
+  // 💾 SAVE
+  localStorage.setItem("reportData", JSON.stringify(finalData))
+
+  // 🚀 OPEN REPORT
+  window.open("report.html", "_blank")
+}
+
+
+async function generateReport(id){
+
+  const project = allProjects.find(p => p.id === id)
+
+  const processed = processProjects([project])[0]
+  const aiData = await getAIReport(project)
+  //const aiData = await getAIReport(allProjects)
+
+  let finalDecision = (aiData.decisions || []).join(", ") || "Manual review required"
+
+  if (project.category?.toLowerCase().includes("hold")) {
+    finalDecision = "Project is currently on hold — requires management review"
+  }
+
+  const finalData = {
+    ...processed,
+
+    overview: aiData.summary || "",
+    healthSummary: aiData.summary || "",
+
+    issues: aiData.risks || [],
+    insights: aiData.insights || [],
+
+    recommendations: {
+      immediate: Array.isArray(aiData.recommendations)
+        ? aiData.recommendations
+        : [],
+      shortTerm: Array.isArray(aiData.priority_actions)
+        ? aiData.priority_actions
+        : [],
+      strategic: []
+    },
+
+    finalDecision: finalDecision,
+
+    executiveSummary: generateExecutiveSummary(processed)
+  }
+
+  // ✅ THIS WAS MISSING
+  localStorage.setItem("reportData", JSON.stringify(finalData))
+
+  // ✅ THIS WAS MISSING
+  window.open("report.html", "_blank")
+}
+
+
+function downloadReport(p) {
+  // const { jsPDF } = window.jspdf;
+  // const doc = new jsPDF();
+const doc = new window.jspdf.jsPDF();
+  let y = 15;
+
+  doc.setFontSize(16);
+  doc.text("PROJECT HEALTH REPORT", 105, y, { align: "center" });
+  y += 10;
+
+  doc.line(10, y, 200, y);
+  y += 8;
+
+  // Helper for page break
+  const checkPage = () => {
+    if (y > 280) {
+      doc.addPage();
+      y = 20;
+    }
+  };
+
+  // Overview
+  doc.setFont("helvetica", "bold");
+  doc.text("Project Overview", 10, y);
+  y += 6;
+
+  doc.setFont("helvetica", "normal");
+  let lines = doc.splitTextToSize(p.overview || "", 180);
+  lines.forEach(line => {
+    doc.text(line, 10, y);
+    y += 5;
+    checkPage();
+  });
+
+  y += 5;
+
+  // Health Summary
+  doc.setFont("helvetica", "bold");
+  doc.text("Health Summary", 10, y);
+  y += 6;
+
+  doc.setFont("helvetica", "normal");
+  lines = doc.splitTextToSize(p.healthSummary || "", 180);
+  lines.forEach(line => {
+    doc.text(line, 10, y);
+    y += 5;
+    checkPage();
+  });
+
+  y += 5;
+
+  // Issues
+  doc.setFont("helvetica", "bold");
+  doc.text("Key Issues", 10, y);
+  y += 6;
+
+  (p.issues || []).forEach(i => {
+    doc.text("- " + i, 10, y);
+    y += 5;
+    checkPage();
+  });
+
+  y += 5;
+
+  // Insights
+  doc.setFont("helvetica", "bold");
+  doc.text("Business Insights", 10, y);
+  y += 6;
+
+  (p.insights || []).forEach(i => {
+    doc.text("- " + i, 10, y);
+    y += 5;
+    checkPage();
+  });
+
+  y += 5;
+
+  // Recommendations
+  doc.setFont("helvetica", "bold");
+  doc.text("Recommendations", 10, y);
+  y += 6;
+
+  [
+    ...(p.recommendations?.immediate || []),
+    ...(p.recommendations?.shortTerm || []),
+    ...(p.recommendations?.strategic || [])
+  ].forEach(i => {
+    doc.text("- " + i, 10, y);
+    y += 5;
+    checkPage();
+  });
+
+  y += 5;
+
+  // Final Decision
+  doc.setFont("helvetica", "bold");
+  doc.text("Final Decision", 10, y);
+  y += 6;
+
+  doc.setFont("helvetica", "normal");
+  lines = doc.splitTextToSize(p.finalDecision || "", 180);
+
+  lines.forEach(line => {
+    doc.text(line, 10, y);
+    y += 5;
+    checkPage();
+  });
+
+  doc.save("AI_Report.pdf");
+}
+
+function generateExecutiveSummary(p){
+
+let summary = ""
+
+// 🧠 HEALTH BASED
+if(p.score > 80){
+  summary += `The project "${p.project_customer}" is performing strongly with stable execution and minimal risk exposure. `
+}
+else if(p.score > 50){
+  summary += `The project "${p.project_customer}" is progressing at a moderate level with certain operational risks that require monitoring. `
+}
+else{
+  summary += `The project "${p.project_customer}" is currently underperforming and exposed to significant risks impacting delivery timelines. `
+}
+
+// 🔍 STATUS BASED
+let status = (p.last_status || "").toLowerCase()
+
+if(status.includes("waiting")){
+  summary += "Progress is currently dependent on external stakeholder response, which is causing delays in execution. "
+}
+else if(status.includes("delay")){
+  summary += "Execution delays have been observed, indicating gaps in planning or coordination. "
+}
+else{
+  summary += "Execution is ongoing without major external blockers. "
+}
+
+// 💰 BUSINESS SIDE
+if((p.business_potential || "").toLowerCase() === "high"){
+  summary += "From a business perspective, the project holds strong potential and justifies continued investment and focus. "
+}
+else if((p.business_potential || "").toLowerCase() === "low"){
+  summary += "Business value appears limited, and further investment should be carefully evaluated. "
+}
+else{
+  summary += "Business potential is currently unclear and requires better definition. "
+}
+
+// 📊 FINAL INSIGHT
+summary += "Improved monitoring, ownership accountability, and structured follow-ups will be critical to ensuring successful project outcomes."
+
+return summary
+}
+
+
+function generateScoreChart(score){
+
+const canvas = document.createElement("canvas")
+canvas.width = 400
+canvas.height = 200
+const ctx = canvas.getContext("2d")
+
+// background
+ctx.fillStyle = "#ffffff"
+ctx.fillRect(0,0,400,200)
+
+// axis
+ctx.strokeStyle = "#ccc"
+ctx.beginPath()
+ctx.moveTo(40,160)
+ctx.lineTo(360,160)
+ctx.stroke()
+
+// bar
+ctx.fillStyle = score > 70 ? "#2e7d32" : score > 50 ? "#f9a825" : "#c62828"
+ctx.fillRect(60, 160 - score, 80, score)
+
+// label
+ctx.fillStyle = "#000"
+ctx.font = "12px Arial"
+ctx.fillText("Score", 70, 180)
+ctx.fillText(score, 80, 140 - score)
+
+return canvas.toDataURL("image/png")
+}
+
+async function getBase64Image(url) {
+  const res = await fetch(url)
+  const blob = await res.blob()
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onloadend = () => resolve(reader.result)
+    reader.readAsDataURL(blob)
+  })
+}
+async function getAIReport(project) {
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": "YOUR_ANTHROPIC_API_KEY_HERE",   // ← paste your key
+        "anthropic-version": "2023-06-01"
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [
+          {
+            role: "user",
+            content: `You are a senior business analyst. Analyze this project data and return ONLY valid JSON with no markdown or backticks.
+
+Return exactly this structure:
+{
+  "summary": "overall project summary",
+  "risks": ["risk1", "risk2"],
+  "recommendations": ["rec1", "rec2"],
+  "decisions": ["decision1"],
+  "insights": ["insight1", "insight2"],
+  "priority_actions": ["action1", "action2"]
+}
+
+Project data:
+${JSON.stringify(project)}`
+          }
+        ]
+      })
+    })
+
+    const data = await response.json()
+    const text = data.content?.[0]?.text || ""
+    const clean = text.replace(/```json|```/g, "").trim()
+    return JSON.parse(clean)
+
+  } catch (err) {
+    console.error("AI Error:", err)
+
+    // ✅ FALLBACK with real rule-based data (not empty!)
+    const processed = processProjects([project])[0]
+    const status = (project.last_status || "").toLowerCase()
+
+    return {
+      summary: generateExecutiveSummary(processed),
+      risks: [
+        status.includes("waiting") ? "Waiting on external response" : "Execution risk detected",
+        (project.business_potential || "").toLowerCase() === "low" ? "Low business potential" : "Market risk"
+      ].filter(Boolean),
+      recommendations: [
+        "Follow up with stakeholders within 48 hours",
+        "Review project timeline and milestones",
+        "Assign clear ownership for next action"
+      ],
+      decisions: [processed.score < 50 ? "Escalate for management review" : "Continue with monitoring"],
+      insights: [
+        `Business potential: ${project.business_potential || "Not defined"}`,
+        `Current status: ${project.last_status || "Not updated"}`,
+        "Resource utilization needs monitoring"
+      ],
+      priority_actions: [
+        project.next_action_plan || "Define next action plan",
+        "Schedule progress review meeting"
+      ]
+    }
+  }
+}
+async function generateAIReport() {
+
+  const projects = allProjects; // already in your code
+
+  const res = await fetch("http://localhost:3000/generate-report", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+     body: JSON.stringify({ projects: allProjects })
+  });
+
+  const data = await res.json();
+
+document.getElementById("aiReportBox").innerHTML = `
+<h3>📊 Summary</h3>
+<p>${data.summary || ""}</p>
+
+<h3>⚠️ Risks</h3>
+<ul>${(data.risks || []).map(r => `<li>${r}</li>`).join("")}</ul>
+
+<h3>🧠 Decisions</h3>
+<ul>${(data.decisions || []).map(d => `<li>${d}</li>`).join("")}</ul>
+
+<h3>📈 Insights</h3>
+<ul>${(data.insights || []).map(i => `<li>${i}</li>`).join("")}</ul>
+`
 }
 
 // START APP
