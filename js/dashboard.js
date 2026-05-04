@@ -809,50 +809,64 @@ function buildHealthReport(projects) {
 }
 
 
-async function generateReport(id){
+// async function generateReport(id){
 
+//   const project = allProjects.find(p => p.id === id)
+
+//   const processed = processProjects([project])[0]
+//   const aiData = await getAIReport(project)
+//   //const aiData = await getAIReport(allProjects)
+
+//   let finalDecision = (aiData.decisions || []).join(", ") || "Manual review required"
+
+//   if (project.category?.toLowerCase().includes("hold")) {
+//     finalDecision = "Project is currently on hold — requires management review"
+//   }
+
+//   const finalData = {
+//     ...processed,
+
+//     overview: aiData.summary || "",
+//     healthSummary: aiData.summary || "",
+
+//     issues: aiData.risks || [],
+//     insights: aiData.insights || [],
+
+//     recommendations: {
+//       immediate: Array.isArray(aiData.recommendations)
+//         ? aiData.recommendations
+//         : [],
+//       shortTerm: Array.isArray(aiData.priority_actions)
+//         ? aiData.priority_actions
+//         : [],
+//       strategic: []
+//     },
+
+//     finalDecision: finalDecision,
+
+//     executiveSummary: generateExecutiveSummary(processed)
+//   }
+
+//   // ✅ THIS WAS MISSING
+//   localStorage.setItem("reportData", JSON.stringify(finalData))
+
+//   // ✅ THIS WAS MISSING
+//   window.open("report.html", "_blank")
+// }
+
+async function generateReport(id) {
   const project = allProjects.find(p => p.id === id)
-
-  const processed = processProjects([project])[0]
-  const aiData = await getAIReport(project)
-  //const aiData = await getAIReport(allProjects)
-
-  let finalDecision = (aiData.decisions || []).join(", ") || "Manual review required"
-
-  if (project.category?.toLowerCase().includes("hold")) {
-    finalDecision = "Project is currently on hold — requires management review"
+  if (!project) {
+    alert("Project not found.")
+    return
   }
 
-  const finalData = {
-    ...processed,
-
-    overview: aiData.summary || "",
-    healthSummary: aiData.summary || "",
-
-    issues: aiData.risks || [],
-    insights: aiData.insights || [],
-
-    recommendations: {
-      immediate: Array.isArray(aiData.recommendations)
-        ? aiData.recommendations
-        : [],
-      shortTerm: Array.isArray(aiData.priority_actions)
-        ? aiData.priority_actions
-        : [],
-      strategic: []
-    },
-
-    finalDecision: finalDecision,
-
-    executiveSummary: generateExecutiveSummary(processed)
-  }
-
-  // ✅ THIS WAS MISSING
-  localStorage.setItem("reportData", JSON.stringify(finalData))
-
-  // ✅ THIS WAS MISSING
+  // Store the raw project object — new report.html handles all analysis + AI
+  localStorage.setItem("reportData", JSON.stringify(project))
   window.open("report.html", "_blank")
 }
+
+
 
 
 function downloadReport(p) {
