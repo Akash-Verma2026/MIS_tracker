@@ -440,6 +440,23 @@
     justify-content: center;
     max-height: 200px;
   }
+  /* Prevent cards and sections from being cut across pages */
+.section,
+.decision-box,
+.rec-tier,
+.report-list li,
+.score-band,
+.kpi-grid,
+tr {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* Keep section headers with their content */
+.section-header {
+  break-after: avoid;
+  page-break-after: avoid;
+}
 
   /* ── ERROR ── */
   #errorMsg {
@@ -932,12 +949,14 @@ function downloadPDF() {
   const element = document.getElementById('reportPage')
   const actions = document.querySelector('.header-actions')
   if (actions) actions.style.display = 'none'
+
   html2pdf().set({
-    margin: 0,
+    margin: [10, 0, 10, 0],
     filename: `Tsuyo_Report_${Date.now()}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }  // ← add this
   }).from(element).save().then(() => {
     if (actions) actions.style.display = ''
   })
